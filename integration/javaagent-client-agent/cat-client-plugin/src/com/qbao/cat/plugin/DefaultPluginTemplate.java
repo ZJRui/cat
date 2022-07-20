@@ -37,6 +37,7 @@ import com.dianping.cat.message.Transaction;
  * @author andersen
  *
  */
+@SuppressWarnings("all")
 public abstract class DefaultPluginTemplate  implements PluginTemplate{
 	
 	protected static Properties config = new Properties();
@@ -44,18 +45,25 @@ public abstract class DefaultPluginTemplate  implements PluginTemplate{
 	private static AtomicBoolean isInited = new AtomicBoolean(false);
 	
 	static{
+		//-javaagent:E:\catshare\cat\ æ¡† æ¶ åŸ‹ ç‚¹ æ–¹ æ¡ˆ é›† æˆ
+		// \javaagent-client-agent\cat-client-agent\target\cat-client-agent-0.0.1-SNAPS
+		// HOT.jar=e:\catagent-conf.properties
+		// -javaagent:C:\Users\andersen\.m2\repository\org\aspectj\aspectjweaver\1.8.
+		// 10\aspectjweaver-1.8.10.jar
+		// -Dorg.aspectj.weaver.loadtime.configuration=file:/E:/aop.xml
+		// -DCATPLUGIN_CONF=e:\catplugin-conf.properties
 		if (isInited.compareAndSet(false, true) && System.getProperty("CATPLUGIN_CONF") != null){
 			String configPath = System.getProperty("CATPLUGIN_CONF");
 			try {
-				// ¶ÁÈ¡ÊôĞÔÎÄ¼şa.properties
+				// è¯»å–å±æ€§æ–‡ä»¶a.properties
 				InputStream in = new BufferedInputStream(new FileInputStream(configPath));
-				config.load(new InputStreamReader(in, "utf-8")); /// ¼ÓÔØÊôĞÔÁĞ±í
+				config.load(new InputStreamReader(in, "utf-8")); /// åŠ è½½å±æ€§åˆ—è¡¨
 				in.close();
 			} catch (Exception e) {
 				System.out.println("Warn: CatPlugin can't resolve properties file : " + configPath);
 			}
 		}else{
-			System.out.println("Warn: CatPlugin miss properties file! You can set it with -DCATPLUGIN_CONF=/opt/.... £¡");
+			System.out.println("Warn: CatPlugin miss properties file! You can set it with -DCATPLUGIN_CONF=/opt/.... Â£Â¡");
 		}
 	}
 
@@ -124,17 +132,17 @@ public abstract class DefaultPluginTemplate  implements PluginTemplate{
 	}
 	
 	/**
-	 * ·½·¨Ö´ĞĞÇ°¿ªÊ¼Âñµã
-	 * @param pjp ·½·¨Ö´ĞĞÉÏÏÂÎÄ
-	 * @return ÂñµãÉú³ÉµÄtransaction¶ÔÏó   ×¢£º¿ÉÔÚÆäÖĞ¼ÓÈëÈô¸Éevent
+	 * Â·Â½Â·Â¨Ã–Â´ÃÃÃ‡Â°Â¿ÂªÃŠÂ¼Ã‚Ã±ÂµÃ£
+	 * @param pjp Â·Â½Â·Â¨Ã–Â´ÃÃÃ‰ÃÃÃ‚ÃÃ„
+	 * @return Ã‚Ã±ÂµÃ£Ã‰ÃºÂ³Ã‰ÂµÃ„transactionÂ¶Ã”ÃÃ³   Ã—Â¢Â£ÂºÂ¿Ã‰Ã”ÃšÃ†Ã¤Ã–ÃÂ¼Ã“ÃˆÃ«ÃˆÃ´Â¸Ã‰event
 	 */
 	protected abstract Transaction beginLog(ProceedingJoinPoint pjp);
 	
 	/**
-	 * ·½·¨Ö´ĞĞºó½øĞĞÊÕÎ²¹¤×÷ 
-	 * @param transaction  beginLogÖĞÉú³ÉµÄtransaction¶ÔÏó£¬×¢£º²»ÓÃÊÖ¶¯µ÷ÓÃcomplete½áÊø£¬Ä£°åÒÑµ÷ÓÃ
-	 * @param retVal ·½·¨·µ»Ø½á¹û
-	 * @param params ·½·¨µ÷ÓÃÊ±´«Èë²ÎÊı
+	 * Â·Â½Â·Â¨Ã–Â´ÃÃÂºÃ³Â½Ã¸ÃÃÃŠÃ•ÃÂ²Â¹Â¤Ã—Ã· 
+	 * @param transaction  beginLogÃ–ÃÃ‰ÃºÂ³Ã‰ÂµÃ„transactionÂ¶Ã”ÃÃ³Â£Â¬Ã—Â¢Â£ÂºÂ²Â»Ã“ÃƒÃŠÃ–Â¶Â¯ÂµÃ·Ã“ÃƒcompleteÂ½Ã¡ÃŠÃ¸Â£Â¬Ã„Â£Â°Ã¥Ã’Ã‘ÂµÃ·Ã“Ãƒ
+	 * @param retVal Â·Â½Â·Â¨Â·ÂµÂ»Ã˜Â½Ã¡Â¹Ã»
+	 * @param params Â·Â½Â·Â¨ÂµÃ·Ã“ÃƒÃŠÂ±Â´Â«ÃˆÃ«Â²ÃÃŠÃ½
 	 */
 	protected abstract void endLog(Transaction transaction, Object retVal, Object... params);
 	

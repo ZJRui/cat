@@ -1,0 +1,2 @@
+1,cat-client-agent 作为一个Java agent 为什么 resource目录下没有 META-INF/MANIFEST.MF 文件，且其中配置Premain-Class
+原因是pom文件中 做了配置

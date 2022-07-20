@@ -37,10 +37,7 @@ public interface PluginTemplate {
 
 	
 	void doThrowing(JoinPoint joinPoint, Throwable ex);
-	
-	/**
-	 * 标识方法，保持空方法体即可，aspectj会在运行时动态生成里面内容
-	 */
+
 	void scope();
 	
 	

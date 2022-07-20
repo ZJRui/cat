@@ -36,6 +36,7 @@ import com.qbao.catagent.ClassPathPreSetProcessor;
  * @author andersen
  *
  */
+@SuppressWarnings("all")
 public abstract class AbstractClassPathPreSetProcessor implements ClassPathPreSetProcessor {
 	// 保存已经加载过指定路径类的classloader
 	private ConcurrentHashMap<ClassLoader, Method> invokedMethods = new ConcurrentHashMap<ClassLoader, Method>();
@@ -55,24 +56,45 @@ public abstract class AbstractClassPathPreSetProcessor implements ClassPathPreSe
 	private final String deleLoader = "sun.reflect.DelegatingClassLoader";
 	// 配置的忽略的classloader类名
 	public List<String> loadersToSkip = null;
+	/**
+	 * 在另一方面，aspectjweaver沒有這樣一個過濾機制，因此即使將通過編織春天的臨時ContextOverridingClassLoader加載的類。幸運的是，aspectjweaver有一個基本上沒有記錄的系統屬性（或者至少我無法找到關於此的任何文檔），名爲aj.weaving.loadersToSkip。通過將其設置爲：
+	 *
+	 * -Daj.weaving.loadersToSkip=org.springframework.context.support.ContextTypeMatchClassLoader$ContextOverridingClassLoader
+	 * 我能跳過編織爲類加載器和大大加快我的應用程序上下文的加載.
+	 *
+	 *
+	 * For whom may need the answer of 1. question is, you can use aj.weaving.loadersToSkip parameter to skip class loader. You need to pass this parameter as vm argument.
+	 *
+	 * For instance:
+	 *
+	 * -Daj.weaving.loadersToSkip=weblogic.utils.classloaders.GenericClassLoader
+	 */
 	// 跟aspectj保持一致，可配置跳过的classloader
 	private final String LOADER_TO_SKIP_CLASSLOADER_PROPERTY_NAME = "aj.weaving.loadersToSkip";
 
 	@Override
 	public void initialize(Properties p) {
-		if (p.getProperty(DEFAULT_CAT_CLIENT_PROPERTY_NAME) == null){
+		//-javaagent:E:\catshare\cat\ 框 架 埋 点 方 案 集 成
+		// \javaagent-client-agent\cat-client-agent\target\cat-client-agent-0.0.1-SNAPS
+		// HOT.jar=e:\catagent-conf.properties
+		// -javaagent:C:\Users\andersen\.m2\repository\org\aspectj\aspectjweaver\1.8.
+		// 10\aspectjweaver-1.8.10.jar
+		// -Dorg.aspectj.weaver.loadtime.configuration=file:/E:/aop.xml
+		// -DCATPLUGIN_CONF=e:\catplugin-conf.properties
+		if (p.getProperty(DEFAULT_CAT_CLIENT_PROPERTY_NAME) == null){//cat.client.path
 			System.out.println(String.format("Warn: CatAgent disabled , Missing %s in config file", DEFAULT_CAT_CLIENT_PROPERTY_NAME));
 			enable = false;
 			return;
 		}
-		if (p.getProperty(DEFAULT_PLUGIN_PROPERTY_NAME) == null){
+		if (p.getProperty(DEFAULT_PLUGIN_PROPERTY_NAME) == null){//cat.plugins.path
 			System.out.println(String.format("Warn: CatAgent disabled , Missing %s in config file", DEFAULT_PLUGIN_PROPERTY_NAME));
 			enable = false;
 			return;
 		}
 		
 		// 组装忽略的classloader列表
-		String loadersToSkipProperty = System.getProperty(LOADER_TO_SKIP_CLASSLOADER_PROPERTY_NAME, "");
+		String loadersToSkipProperty = System.getProperty(LOADER_TO_SKIP_CLASSLOADER_PROPERTY_NAME, "");//aj.weaving.loadersToSki
+		//StringTokenizer(String str, String delim) ：构造一个用来解析 str 的 StringTokenizer 对象，并提供一个指定的分隔符。
 		StringTokenizer st = new StringTokenizer(loadersToSkipProperty, ",");
 		if (loadersToSkipProperty != null && loadersToSkip == null) {
 			if (st.hasMoreTokens()) {
@@ -94,7 +116,7 @@ public abstract class AbstractClassPathPreSetProcessor implements ClassPathPreSe
 		}
 
 		// 初始化cat-client相关jar包路径
-		File catClientPath = new File(p.getProperty(DEFAULT_CAT_CLIENT_PROPERTY_NAME));
+		File catClientPath = new File(p.getProperty(DEFAULT_CAT_CLIENT_PROPERTY_NAME));//cat.client.path
 		if (catClientPath.exists() == false) {
 			System.out.println("Warn:  CatAgent disabled! file structure is not meet needs!");
 			enable = false;
@@ -142,6 +164,7 @@ public abstract class AbstractClassPathPreSetProcessor implements ClassPathPreSe
 	 */
 	private void loadPluginJars(ClassLoader classLoader) {
 		Method method = null;
+		//让这个classloader 去加载 指定的jar
 		if ((method = (Method) invokedMethods.get(classLoader)) == null) {
 			try {
 				if (classLoader != null) {
@@ -201,6 +224,7 @@ public abstract class AbstractClassPathPreSetProcessor implements ClassPathPreSe
 
 		// 如果没出问题，则加入预加载类
 		if (enable) {
+			//todo: transform 某一个class的时候会执行 这里的loadPluginJars，那么每transform一个class都要执行一遍load吗？
 			loadPluginJars(classLoader);
 		}
 		return bytes;
